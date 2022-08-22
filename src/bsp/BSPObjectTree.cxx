@@ -1,9 +1,6 @@
 
 #include "BSPObjectTree.h"
 
-// #include "dptocpp.h"
-// #include "DataManagerInstance.h"
-// #include "KBByteArray.h"
 #include "IntervalTree.h"
 
 #define CLASSNAME "BSPObjectTree"
@@ -11,17 +8,10 @@
 void BSPObjectTree::print(){
     stringstream ss;
     ss << *this;
-#ifndef NO_DP
-    getDataManager()->dperrline(ss.str().c_str());
-#else
     cerr << ss.str().c_str() << endl;
-#endif
 }
 
 BSPObjectTree::BSPObjectTree() : root(NULL) {
-#ifndef NO_DP
-    objectFunctions = getClassToFunction(CLASSNAME);
-#endif
 }
 
 BSPObjectTree::~BSPObjectTree(){
@@ -144,10 +134,6 @@ Plane *forceChoosingPlane(Rectangle3d *rect, vector <BSPObjectPart *> *objectpar
             }
         }
         if (retAllFaces && minfaces > 0){
-            /*                stringstream ss;
-             ss << " objid=" << objid << " plane: " << *retAllFaces->at(0)->plane << endl;
-             staticDataManagerInstance->dplogline(ss.str().c_str());*/
-            //                cout << " objid=" << objid << " plane: " << *retAllFaces->at(0)->plane << endl;
             return new Plane(*retAllFaces->at(0)->plane);
         }
         // something went wrong
@@ -333,8 +319,6 @@ Plane *choosePlane(vector <BSPObjectPart *> *objectparts, Rectangle3d *rect, boo
             int oneSide = numberOfTotalObjects - numberOfPassedObjects - numberOverlappedObjects;
             double tmpplanevalue = numberOverlappedObjects + fmax(oneSide, numberOfPassedObjects)
             / (fmin( oneSide, numberOfPassedObjects ) + 1.);
-            /*            cout << "dim=" << IntToString(dimension) << " : min=" << DoubleToString(min) << " max=" << DoubleToString(max) << " planepos=" << DoubleToString((max<<min)/2.) << " numberOfPassedObjects=" << IntToString(numberOfPassedObjects) << " oneSide=" << IntToString(oneSide) << " hasbestplane=" << BoolToString(hasbestplane) << " numberOverlappedObjects=" << IntToString(numberOverlappedObjects) << " bestNumOverlappedObjects=" << IntToString(bestNumOverlappedObjects) << " tmpplanevalue=" << DoubleToString(tmpplanevalue) << " bestplanevalue=" << DoubleToString(bestplanevalue) << endl;
-             */
             if ((numberOfPassedObjects!=0) &&
                 (oneSide!=0) &&
                 (!hasbestplane ||
@@ -345,7 +329,6 @@ Plane *choosePlane(vector <BSPObjectPart *> *objectparts, Rectangle3d *rect, boo
                     bestNumOverlappedObjects = numberOverlappedObjects;
                     bestplaneposition = (max+min)/2.;
                     hasbestplane = true;
-                    //                    cout << "\thasbestplane set dimension=" << IntToString(dimension) << " bestplaneposition=" << DoubleToString(bestplaneposition) << endl;
             }
             if (fromMaxTree){
                 numberOfPassedObjects++;
@@ -412,34 +395,6 @@ void BSPObjectTree::generate(){
     for (auto it=bspobj->allParts.begin(); it!=bspobj->allParts.end(); it++){
       allParts.push_back(*it);
     }
-    /*    KBFaces3D *faces3d = dynamic_cast<KBFaces3D*>(it->second);
-    int bspobjid = it->first;
-    BSPObject *bspObj = new BSPObject(bspobjid);
-    KBFaces3D *splitfaces3d = dynamic_cast<KBFaces3D*>(resolveKBObject(_arg3->get(bspobjid)));
-    if (splitfaces3d && splitfaces3d->faces){
-      for (auto it = splitfaces3d->faces->begin(); it != splitfaces3d->faces->end(); it++){
-        auto face = *it;
-        Plane *plane = face->getPlane();
-        if (fabs(plane->x) <= TOLER) plane->x = 0.;
-        if (fabs(plane->y) <= TOLER) plane->y = 0.;
-        if (fabs(plane->z) <= TOLER) plane->z = 0.;
-        bspObj->splitPlanes.push_back(*plane);
-      }
-    }
-    _arg2->allBSPObjects[bspObj->_id] = bspObj;
-    BSPObjectPart *part = new BSPObjectPart(bspObj, duplicateFaceList(faces3d->faces));
-    allParts.push_back(part);
-    */
-  }
-
-  if (allParts.size()==1){
-    /*
-    BSPObject *bspObj = allParts[0]->bspObject;
-    if (!bspObj->hasMoreSplitPlanes()){
-      _arg2->root = new BSPObjectNode(allParts[0]);
-      allParts.clear();
-      return;
-      }*/
   }
 
   root = generateBSPObjectSubTree(allParts);
@@ -531,12 +486,6 @@ BSPObjectNode *generateBSPObjectSubTree(vector<BSPObjectPart*> &allParts, bool d
                 bspnodereturn = newBspObjectNode;
             }
             
-            /*if (isSplitPlane[0] && objectsNeg->size()==1){ // DEBUG
-                newBspObjectNode->_negativeSide = new BSPObjectNode(BSPObjectNode::IN_NODE);
-                BSPObjectPart *part = *objectsNeg->begin();
-                delete part;
-                delete objectsNeg;
-            } else */
             /* Construct Tree's "-" branch */
             if (objectsNeg->size()==1){
                 BSPObjectPart *part = *objectsNeg->begin();
@@ -556,12 +505,6 @@ BSPObjectNode *generateBSPObjectSubTree(vector<BSPObjectPart*> &allParts, bool d
             }
             
             /* Construct Tree's "+" branch */
-            /*if (isSplitPlane[0] && objectsPos->size()==1){ // DEBUG
-                newBspObjectNode->_positiveSide = new BSPObjectNode(BSPObjectNode::IN_NODE);
-                BSPObjectPart *part = *objectsPos->begin();
-                delete part;
-                delete objectsPos;
-            } else*/
             if (objectsPos->size()==1){
                 BSPObjectPart *part = *objectsPos->begin();
                 if (!part->bspObject->hasMoreSplitPlanes()){
@@ -601,27 +544,3 @@ int BSPObjectTree::getNumberOfTotalParts(){
 int BSPObjectTree::getNumberOfTotalObjects(){
    return (int)allBSPObjects.size();
 }
-
- 
-/*KBObject *BSPObjectTree::getPartOutline(int objid, int partid){
-    if (allBSPObjects.find(objid) != allBSPObjects.end()){
-        BSPObject *bspo = allBSPObjects[objid];
-        auto partit = bspo->allParts.begin();
-        while (partid>0 && partit!=bspo->allParts.end()){
-            partit++;
-            partid--;
-        }
-        auto part = *partit;
-        if (part){
-            KBByteArray *ba = new KBByteArray();
-            int linedatasize = part->countNumberOfLines() * 3 * sizeof(float);
-            float *linedata = (float *)malloc(linedatasize);
-            int off = 0;
-            part->writeLines(linedata, off);
-            ba->dataSet(linedata, linedatasize);
-            return ba;
-        }
-    }
-    return NULL;
-}
-*/

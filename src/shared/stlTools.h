@@ -43,9 +43,6 @@ typedef unsigned long udplong;
 #include <map>
 #include <set>
 #include <stack>
-#ifndef NO_DP
-#include "primitive.h"
-#endif
 // string.h for memcpy
 #include <string.h>
 
@@ -237,90 +234,6 @@ template<typename T, size_t N>
 T * vend(T (&ra)[N]) {
     return ra + N;
 }
-
-#ifndef NO_DP
-void writeBoolToSocket(int, bool);
-void writeByteToSocket(int, unsigned char);
-void writeIntToSocket(int, int);
-void writeBoolToMem(void *mem, bool v);
-void writeShortToMem(void *mem, short v);
-void writeIntToMem(void *mem, int v);
-void *writeStringToMem(void *mem, string &str);
-void *writeByteArrayToMem(void *mem, void *src, int srclen);
-int readBoolFromSocket(int, bool &);
-int readByteFromSocket(int, unsigned char &);
-int readIntFromSocket(int, int &);
-int readStringFromSocket(int, string &retstr);
-int readIntFromPtr(void *,int offset=0);
-void swapdata(void *, int);
-
-class ReadBuffer {
-private:
-    unsigned char *dataRead;
-    int dataReadPlace, dataReadTotalLength;
-    bool releaseOnDelete;
-public:
-    ReadBuffer(int sock, int size);
-    ReadBuffer(void *arr, int size, bool releaseOnDelete=true);
-    virtual ~ReadBuffer();
-    int readInt(int &val);
-    int readString(string &retstr);
-    void readStringWithLength(int len, string &retstr);
-    int readStringWithDelim(string &retstr, const char *delimiter, const bool includeDelimiter = false);
-    int readBool(bool &val);
-    bool readBytesDirect(int nbytes, void **bytes);
-    int readBytes(int nbytes, void *bytes);
-    bool isAtEnd(){ return dataReadPlace >= dataReadTotalLength; };
-    int getReadPlace(){ return dataReadPlace; };
-    bool computeAndCheckCheckSum();
-    bool computeAndWriteCheckSum();
-    int skip(int);
-    /*
-    int readByte(unsigned char &);
-    int readInt(int &val);
-    int readString(string &retstr);
-    int readStringVector(vector<string> &retstr);
-    int readIntVector(vector<int> &retstr);
-    */
-};
-#endif
-
-#ifndef NO_DP
-bool computeAndCheckSumIn(bool check, bool write, unsigned char *dataRead, int dataReadTotalLength);
-
-class WriteBuffer {
-protected:
-    vector< pair<int, void*> > *dataToWrite;
-    int dataToWriteTotalLength;
-public:
-    WriteBuffer();
-    virtual ~WriteBuffer();
-    void *getAllData(int &);
-    void writeShort(short val);
-    void writeInt(int val);
-    void writeLong(unsigned long val);
-    void writeBool(bool val);
-    void writeString(string &retstr);
-    void writeData(void *data, int dataLen);
-    void writeStringVector(vector<string> &retstr);
-    void writeIntVector(vector<int> &retstr);
-    void *getDataItem(int itemnum);
-    int getLength() { return dataToWriteTotalLength; }
-};
-#endif
-
-#ifndef NO_DP
-class SocketBuffer : public WriteBuffer {
-private:
-    int sockfd;
-public:
-    SocketBuffer(int);
-    virtual ~SocketBuffer();
-    int write();
-    void computeAndWriteCheckSum();
-    void setSocket(int s){sockfd=s; }
-};
-#endif
 
 string getHostName();
 

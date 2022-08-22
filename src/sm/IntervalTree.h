@@ -6,10 +6,6 @@
 #include "DataListInterface.h"
 #include "stlTools.h"
 
-#ifdef NO_DP
-#define dplog(str) cerr << str << endl;
-#endif
-
 template <typename numericalValueType, typename nodeClass> class IntervalDimension {
 public:
     numericalValueType (*minMethod)(const nodeClass&);
@@ -89,13 +85,8 @@ public:
     IntervalTreeSubclass(IntervalDimension<numericalValueType,nodeClass> *iD) : IntervalTreeDefaults<numericalValueType, nodeClass>(), intervalDimension(iD){
         if (!iD)
             intervalDimension = &IntervalTreeDefaults<numericalValueType, nodeClass>::default_interval_dimension;
-        //
-    }//int dim, numericalValueType (*min)(const nodeClass&), numericalValueType (*max)(const nodeClass&)){
-        //intervalDimension = new IntervalDimension<numericalValueType,nodeClass>(dim, min, max);
-//    };
+    }
     ~IntervalTreeSubclass(){
-//        if (intervalDimension)
-//            delete intervalDimension;
     }
 };
 
@@ -216,38 +207,6 @@ public:
         }
         return allList;
     }
-    /*  WOULD BE GREAT TO OPTIMIZE getAll, but not needed
-    class iterator {
-        stack<IntervalTreeNode<numericalValueType, nodeClass, internalNodeClass> *> searchStack;
-    public:
-        iterator(IntervalTree<numericalValueType, nodeClass, internalNodeClass> &ittree){
-            auto currentNode = ittree.rootNode;
-            if (currentNode)
-                searchStack.push(currentNode);
-        };
-        iterator(const iterator&){}
-        ~iterator(){
-        }
-        iterator& operator=(const iterator&);
-        bool operator==(const iterator&) const;
-        bool operator!=(const iterator&) const {
-            return false;
-        }
-        iterator& operator++(){ return *this; }
-        nodeClass operator*() const {
-            IntervalTreeNode<numericalValueType, nodeClass, internalNodeClass> *currentNode = NULL;
-            if (!searchStack.empty()){
-                currentNode->top();
-            }
-            
-        }
-        nodeClass* operator->() const;
-    };
-    //IntervalTree<numericalValueType, nodeClass, internalNodeClass>::
-    iterator begin(){ return iterator(*this); }
-    //IntervalTree<numericalValueType, nodeClass, internalNodeClass>::
-    iterator end() { return iterator(*this); }
-*/
     virtual bool isEnclosedBy(const nodeClass &rs){
       NeededCriteria<numericalValueType, nodeClass> nc;
       vector<nodeClass> resV;
@@ -572,11 +531,8 @@ public:
             auto rsq = rsp.second;
             allRectsToQuery.pop_front();
             auto rectsIn = this->windowQuery(rsq);
-//            cout << "addOnePiece: rs=" << rs << " rectsIn.size=" << rectsIn->size() << endl;
-            // Create all rectangles addingAll that can be merged with existing overlapping or adjacent ones
             for (auto it=rectsIn->begin(); it!=rectsIn->end(); it++){
                 auto rect = (*it);
-//                cout << "\trect=" << rect << endl;
                 if (rect.enclosedBy(rsq)){
                     listController->deleteData(rect);
                     continue;
@@ -584,13 +540,11 @@ public:
                 if ( (checkBits & 1) && isAdjacentX(rect,rsq)){
                     auto tmprect = consensus(rsq,rect,0);
                     addingAll.push_back(tmprect);
-//                    cout << "adjx: tmprect=" << tmprect << endl;
                     if (!(checkBits & 16))
                         allRectsToQuery.push_back(pair<int,nodeClass>(2 | 8, tmprect));
                 } else if ( (checkBits & 2) && isAdjacentY(rect,rsq)){
                     auto tmprect = consensus(rsq,rect,1);
                     addingAll.push_back(tmprect);
-//                    cout << "adjy: tmprect=" << tmprect << endl;
                     if (!(checkBits & 8))
                         allRectsToQuery.push_back(pair<int,nodeClass>(1 | 16, tmprect));
                 } else if ( (checkBits & 4) && has_intersection(rect,rsq) && !rect.enclosedBy(rsq)){
@@ -703,13 +657,10 @@ public:
         if (rs.area()<=0){
             stringstream ss;
             ss << "Warning: area of rectangle passed in addRectangle less than or equal to 0 rect=" << rs << endl;
-            dplog(ss.str());
+            cout << ss.str();
         }
-        //auto allList = IntervalTree<numericalValueType, nodeClass, internalNodeClass>::getAll();
-        //delete allList;
         list<nodeClass> v[4],va[4];
         auto containmentList = IntervalTree<numericalValueType, nodeClass, internalNodeClass>::windowQuery(rs);
-        //        cout << "     query rs=" << rs << endl;
         bool hasAny = false, hasAnyBeenSet = false;
         if (insideController && insideIntervalTree){
             // if space inside is needed, take all rectangles in containmentList, find largest, and add addOnePiece for each
@@ -775,26 +726,12 @@ public:
                         ss << "\t" << (*it) << endl;
                     }
                     delete allV;
-                    dplog(ss.str().c_str());
+                    cout << ss.str().c_str();
                 }
             }
         }
-        /*
-        auto allList = IntervalTree<numericalValueType, nodeClass, internalNodeClass>::getAll();
-        cout << "rs=" << rs << " containmentList:\n" << *containmentList << endl;
-        cout << "actual containments:"<< endl;
-        for (auto it = allList->begin(); it!=allList->end();it++){
-            auto rect = (*it);
-            if (has_intersection(rect, rs)){
-                cout << " : " << rect << endl;
-            }
-        }*/
         for (auto it = containmentList->begin(); it!=containmentList->end();it++){
             auto clrs = (*it);
-/*            if (!has_intersection(clrs, rs)){
-                cout << " WARNING : clrs=" << clrs << " does not have intersection with rs=" << rs << endl;
-                continue;
-            }*/
             if (nodeClass::type_equals(rs.minx,clrs.maxx)){  // Exactly adjacent to left, only add to list for containment query
                 va[0].push_back(clrs);
                 continue;
@@ -1119,15 +1056,6 @@ public:
         for (auto it3=addingAllTmp->begin();it3!=addingAllTmp->end();it3++){
             auto rect = (*it3);
             addingAll.remove(&rect);
-/*            auto allA = addingAll.getAll();
-            cout << "allA:" << endl;
-            for (auto it5 = allA->begin(); it5!=allA->end(); it5++){
-                cout << "\t" << *it5 << endl;
-            }
-            cout << "BEFORE rect=" << rect << " isEnclosedBy:" << endl;
- */
-            //bool encBy = addingAll.isEnclosedBy(rect);
-            //cout << "AFTER : rect=" << rect << " isEnclosedBy=" << encBy << endl << endl;
             if (!addingAll.isEnclosedBy(rect)) {
                 addingAll2.push_back(rect);
                 addingAll.add(&rect); // only need to re-add it if it isn't enclosed by any other
@@ -1187,7 +1115,7 @@ public:
         if (rs.area()<=0){
             stringstream ss;
             ss << "Warning: area of rectangle passed in addRectangle less than or equal to 0 rect=" << rs << endl;
-            dplog(ss.str());
+            cout << ss.str();
         }
         //        cout << " getSpacesInsideAndAddFullRectangleInEmptySpace rs=" << rs << endl;
         list<nodeClass> v[6],va[6];
@@ -1249,26 +1177,12 @@ public:
                         ss << "\t" << (*it) << endl;
                     }
                     delete allV;
-                    dplog(ss.str().c_str());
+                    cout << ss.str().c_str();
                 }
             }
         }
-        /*
-         auto allList = IntervalTree<numericalValueType, nodeClass, internalNodeClass>::getAll();
-         cout << "rs=" << rs << " containmentList:\n" << *containmentList << endl;
-         cout << "actual containments:"<< endl;
-         for (auto it = allList->begin(); it!=allList->end();it++){
-         auto rect = (*it);
-         if (has_intersection(rect, rs)){
-         cout << " : " << rect << endl;
-         }
-         }*/
         for (auto it = containmentList->begin(); it!=containmentList->end();it++){
             auto clrs = (*it);
-/*            if (!has_intersection(clrs, rs)){
-                cout << " WARNING : clrs=" << clrs << " does not have intersection with rs=" << rs << endl;
-                continue;
-            }*/
             if (nodeClass::type_equals(rs.minx,clrs.maxx)){  // Exactly adjacent to left, only add to list for containment query
                 va[0].push_back(clrs);
                 continue;

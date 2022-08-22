@@ -206,12 +206,7 @@ Rectangle3<valType> consensus(const Rectangle3<valType> &r1, const Rectangle3<va
     
     stringstream ss;
     ss << "WARNING: consensus called dimension=" << dimension << endl;
-#ifndef NO_DP
-    if (staticDataManagerInstance)
-        staticDataManagerInstance->dperr(ss.str().c_str());
-    else
-#endif
-        cerr << ss.str();
+    cerr << ss.str();
     return Rectangle3<valType>();
 }
 

@@ -15,7 +15,6 @@ public:
     int getNumberOfParts(int);
     int getNumberOfTotalParts();
     int getNumberOfTotalObjects();
-    // KBObject *getPartOutline(KBObject*, KBObject*);
     void print();
     void clear();
     virtual const string toString(){return ( "-BSPObjectTree-" );}

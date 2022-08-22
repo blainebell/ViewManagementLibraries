@@ -6,12 +6,7 @@
 #include "stlTools.h"
 #include <math.h>
 
-#ifndef NO_DP
-#include "DataManagerInstance.h"
-extern DataManagerInstance *staticDataManagerInstance;
-#else
 #include <sstream>
-#endif
 #include "Point2d.h"
 
 using namespace std;
@@ -375,12 +370,7 @@ Rectangle2<valType> consensus(const Rectangle2<valType> &r1, const Rectangle2<va
     }
     stringstream ss;
     ss << "WARNING: consensus called dimension=" << dimension << endl;
-#ifndef NO_DP
-	if (staticDataManagerInstance)
-        staticDataManagerInstance->dperr(ss.str().c_str());
-    else
-#endif
-        cerr << ss.str();
+    cerr << ss.str();
     return Rectangle2<valType>();
 }
 
